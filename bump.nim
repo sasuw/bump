@@ -420,7 +420,8 @@ proc composeTag*(last: Version; next: Version; v = false; tags = ""):
 
 proc bump*(minor = false; major = false; patch = true; release = false;
           dry_run = false; folder = ""; nimble = ""; log_level = logLevel;
-          commit = false; v = false; manual = ""; message: seq[string]): int =
+          commit = false; v = false; manual = ""; message: seq[string];
+          nogit = true): int =
   ## the entry point from the cli
   var
     target: Target
@@ -459,15 +460,16 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     debug sought.message
     target = sought.found.get
 
-  # if we're not on the master/main branch, let's just bail for now
-  let
-    branch = appearsToBeMasterBranch()
-  if branch.isNone:
-    crash "uh oh; i cannot tell if i'm on the master/main branch"
-  elif not branch.get:
-    crash "i'm afraid to modify any branch that isn't master/main"
-  else:
-    debug "good; this appears to be the master/main branch"
+  if nogit == false:
+    # if we're not on the master/main branch, let's just bail for now
+    let
+      branch = appearsToBeMasterBranch()
+    if branch.isNone:
+      crash "uh oh; i cannot tell if i'm on the master/main branch"
+    elif not branch.get:
+      crash "i'm afraid to modify any branch that isn't master/main"
+    else:
+      debug "good; this appears to be the master/main branch"
 
   # make a temp file in an appropriate spot, with a significant name
   let
@@ -539,6 +541,9 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   # cheer
   fatal &"🎉{msg}"
 
+  if nogit:
+    debug "nogit: just bump, no git"
+
   if dry_run:
     debug "dry run and done"
     return
@@ -551,8 +556,12 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     discard e # noqa 😞
     crash &"failed to copy `{temp}` to `{target}`: {e.msg}"
 
+
   # try to do some git operations
   block nimgitsfu:
+    if nogit: #no git just bump
+      fatal "🍻bumped"
+      return 0
     # commit just the .nimble file, or the whole repository
     let
       committee = if commit: target.repo else: $target
@@ -646,4 +655,5 @@ when isMainModule:
       "release": "also use `hub` to issue a GitHub release",
       "log-level": "specify Nim logging level",
       "manual": "manually set the new version to #.#.#",
+      "nogit": "bumps version only, does not perform any git operations"
     }

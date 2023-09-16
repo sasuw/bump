@@ -2,3 +2,5 @@ deps
 nimblemeta.json
 bin/
 nim.cfg
+bump
+.idea

@@ -127,6 +127,12 @@ $ bump --nimble other.nimble
 🍻bumped
 ```
 
+If you want to bump version only without doing any git operations, use `--nogit`
+```
+$ bump --nogit
+🎉2.6.10
+```
+
 ## Complete Options via `--help`
 ```
 Usage:
@@ -146,6 +152,7 @@ Options(opt-arg sep :|=|spc):
   -c, --commit       bool    false    also commit any other unstaged changes
   -v, --v            bool    false    prefix the version tag with an ugly `v`
   --manual=          string  ""       manually set the new version to #.#.#
+  --nogit            bool    false    bumps version only, does not perform any git operations
 ```
 
 ## Library Use
